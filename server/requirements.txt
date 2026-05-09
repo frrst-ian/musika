@@ -2,3 +2,8 @@ fastapi
 uvicorn
 requests
 python-dotenv
+beautifulsoup4
+httpx
+pydantic
+lyricsgenius
+groq

@@ -1,29 +1,33 @@
 import os
-import requests
+import json
+from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
 
-API_URL = "https://router.huggingface.co/hf-inference/models/facebook/bart-large-mnli"
+client = Groq(api_key=os.environ["GROQ_TOKEN"])
 GENRE_LABELS = ["pop", "hip-hop", "rock", "r&b", "electronic", "country", "jazz", "classical"]
 
-headers = {"Authorization": f"Bearer {os.environ['HF_TOKEN']}"}
-
 def classify_genre(lyrics: str) -> dict:
-    payload = {
-        "inputs": lyrics[:1500],
-        "parameters": {"candidate_labels": GENRE_LABELS},
-    }
-    response = requests.post(API_URL, headers=headers, json=payload)
-    result = response.json()
+    prompt = f"""You are a music genre classifier.
 
-    top = result[0]
-    return {
-        "genre": top["label"],
-        "confidence": round(top["score"] * 100, 2),
-        "all_scores": {item["label"]: round(item["score"] * 100, 2) for item in result},
-    }
+Given these song lyrics, classify the genre and return ONLY a JSON object with no markdown, no explanation.
 
-if __name__ == "__main__":
-    sample = "Nowadays everybody wanna talk like they got something to say but nothing comes out when they move their lips just a bunch of gibberish"
-    print(classify_genre(sample))
+Lyrics:
+{lyrics[:2000]}
+
+Return this exact format:
+{{
+  "genre": "the top genre from this list: {GENRE_LABELS}",
+  "confidence": <float 0-100>,
+  "all_scores": {{"pop": <float>, "hip-hop": <float>, "rock": <float>, "r&b": <float>, "electronic": <float>, "country": <float>, "jazz": <float>, "classical": <float>}}
+}}"""
+
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=300,
+    )
+
+    text = response.choices[0].message.content.strip()
+    return json.loads(text)
