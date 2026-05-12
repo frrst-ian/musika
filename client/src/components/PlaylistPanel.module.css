@@ -1,8 +1,8 @@
 .panel {
-  border: 1px solid rgba(154, 223, 158, 0.12);
-  border-radius: 8px;
-  background: rgba(154, 223, 158, 0.02);
+  border: 1px solid rgba(154, 223, 158, 0.20);
   overflow: hidden;
+  padding: 0.8rem 0;
+  font-family: "Hack Regular", monospace;
 }
 
 .header {
@@ -28,7 +28,7 @@
   background: transparent;
   color: rgba(236, 249, 236, 0.35);
   font-family: inherit;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 0.06em;
   cursor: pointer;
   transition: color 0.15s, background 0.15s;
@@ -47,8 +47,7 @@
   background: none;
   border: none;
   color: rgba(236, 249, 236, 0.25);
-  font-family: inherit;
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   letter-spacing: 0.08em;
   cursor: pointer;
   transition: color 0.15s;
@@ -59,10 +58,12 @@
 }
 
 .list {
-  max-height: 240px;
+  max-height: 330px;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(154, 223, 158, 0.15) transparent;
+}
+
+.list::-webkit-scrollbar {
+    display: none; 
 }
 
 .empty {
@@ -82,7 +83,7 @@
 }
 
 .row:hover {
-  background: rgba(154, 223, 158, 0.04);
+  background: rgb(66 77 89 / 26%);
 }
 
 .row:last-child {
@@ -117,7 +118,7 @@
 }
 
 .rowGenre {
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   color: var(--primary);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -125,7 +126,7 @@
 }
 
 .rowCount {
-  font-size: 0.65rem;
+  font-size: 0.69rem;
   color: rgba(236, 249, 236, 0.3);
   font-variant-numeric: tabular-nums;
 }

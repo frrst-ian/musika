@@ -13,7 +13,6 @@
 .input {
   background: transparent;
   border: 1px solid rgba(154, 223, 158, 0.2);
-  border-radius: 6px;
   padding: 0.75rem 1rem;
   color: var(--text);
   font-size: 0.875rem;
@@ -44,7 +43,6 @@
   background: var(--primary);
   color: var(--background);
   border: none;
-  border-radius: 6px;
   padding: 0.75rem 1.5rem;
   font-size: 0.875rem;
   font-family: inherit;

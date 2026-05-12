@@ -13,7 +13,7 @@ import styles from "./styles/app.module.css"
 const BASE = "http://localhost:8000"
 
 export default function App() {
-  const [mode, setMode] = useState("chat")
+  const [mode, setMode] = useState("search")
   const [ttsEnabled, setTtsEnabled] = useState(false)
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -104,11 +104,10 @@ function handleCommandAction(action) {
     <div className={styles.page}>
       <header className={styles.header}>
         <h1 className={styles.logo}>musika</h1>
-        <p className={styles.tagline}>genre classifier</p>
+        <p className={styles.tagline}>music genre classifier</p>
       </header>
 
       <main className={styles.main}>
-        {/* ── controls row ── */}
         <div className={styles.controls}>
           <ModeToggle mode={mode} onChange={setMode} />
           <div className={styles.controlsRight}>
@@ -117,8 +116,7 @@ function handleCommandAction(action) {
           </div>
         </div>
 
-        {/* ── input area ── */}
-        {mode === "chat" && (
+        {mode === "search" && (
           <SearchBar onSearch={handleSearch} loading={loading} />
         )}
 
@@ -144,7 +142,6 @@ function handleCommandAction(action) {
           </button>
         )}
 
-        {/* ── feedback ── */}
         {commandFeedback && (
           <p className={styles.feedback}>{commandFeedback}</p>
         )}

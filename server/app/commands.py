@@ -1,15 +1,11 @@
-# app/commands.py
-
 import os
 os.environ["PULSE_SERVER"] = "unix:/run/user/1000/pulse/native"
 
 import ctypes
 from ctypes import *
+import time
 
-# Suppress ALSA warnings
-ERROR_HANDLER_FUNC = CFUNCTYPE(
-    None, c_char_p, c_int, c_char_p, c_int, c_char_p
-)
+ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
 
 def py_error_handler(filename, line, function, err, fmt):
     pass
@@ -22,7 +18,6 @@ try:
 except:
     pass
 
-
 import speech_recognition as sr
 from app.tts import speak_sync
 import webbrowser
@@ -30,6 +25,7 @@ from ytmusicapi import YTMusic
 
 CHROMEBOOK_MIC_INDEX = 4
 CHROMEBOOK_RATE = 48000
+IDLE_TIMEOUT = 3 * 60  # seconds
 
 _recognizer = sr.Recognizer()
 _ytm = YTMusic()
@@ -54,7 +50,6 @@ def _get_ytmusic_url(title: str, artist: str) -> str:
             return f"https://music.youtube.com/watch?v={video_id}"
     except:
         pass
-
     return f"https://music.youtube.com/search?q={title}+{artist}".replace(" ", "+")
 
 
@@ -64,11 +59,9 @@ def _transcribe(source) -> str:
         text = _recognizer.recognize_google(audio).lower()
         print(f"[CMD] heard: {text}")
         return text
-
     except (sr.WaitTimeoutError, sr.UnknownValueError):
         print("[CMD] nothing heard")
         return ""
-
     except sr.RequestError:
         print("[CMD] API error")
         return ""
@@ -96,19 +89,15 @@ def _handle(action: str, last_result: dict | None):
     if action == "read_sentiment":
         sentiment = last_result.get("sentiment", "unknown")
         emotion = last_result.get("emotion", "unknown")
-
         msg = f"The song feels {emotion} with a {sentiment} sentiment."
         speak_sync(msg)
-
         return {"action": "read_sentiment", "text": msg}
 
     if action == "read_genre":
         genre = last_result.get("genre", "unknown")
         confidence = last_result.get("confidence", 0)
-
         msg = f"The genre is {genre} with {confidence:.0f} percent confidence."
         speak_sync(msg)
-
         return {"action": "read_genre", "text": msg}
 
     return {"action": "none"}
@@ -124,12 +113,18 @@ def listen_for_command(last_result: dict | None):
             _recognizer.adjust_for_ambient_noise(source, duration=1)
 
             print("[CMD] waiting for wake word...")
+            last_activity = time.time()
 
             while True:
-                text = _transcribe(source)
+                if time.time() - last_activity > IDLE_TIMEOUT:
+                    print("[CMD] idle timeout waiting for wake word")
+                    return {"action": "stop", "reason": "timeout"}
 
+                text = _transcribe(source)
                 if not text:
                     continue
+
+                last_activity = time.time()
 
                 if "end" in text:
                     return {"action": "stop"}
@@ -139,19 +134,26 @@ def listen_for_command(last_result: dict | None):
                     print("[CMD] wake word detected")
                     break
 
+            last_activity = time.time()
+
             while True:
+                if time.time() - last_activity > IDLE_TIMEOUT:
+                    print("[CMD] idle timeout waiting for command")
+                    speak_sync("Goodbye")
+                    return {"action": "stop", "reason": "timeout"}
+
                 print("[CMD] ready for command...")
                 text = _transcribe(source)
-
                 if not text:
                     continue
+
+                last_activity = time.time()
 
                 if "end" in text:
                     speak_sync("Goodbye")
                     return {"action": "stop"}
 
                 action = _match_command(text)
-
                 if action:
                     _handle(action, last_result)
                     continue

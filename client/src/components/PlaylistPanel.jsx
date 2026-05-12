@@ -16,11 +16,11 @@ function SongRow({ song, onRemove }) {
         <span className={styles.rowCount}>×{song.search_count}</span>
         {song.youtube_url && (
           <a href={song.youtube_url} target="_blank" rel="noreferrer" className={styles.rowLink}>
-            <ExternalLink size={12} />
+            <ExternalLink size={14} />
           </a>
         )}
         <button className={styles.removeBtn} onClick={() => onRemove(song)}>
-          <Trash2 size={12} />
+          <Trash2 size={14} />
         </button>
       </div>
     </div>

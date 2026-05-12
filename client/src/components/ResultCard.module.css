@@ -1,6 +1,5 @@
 .card {
   border: 1px solid rgba(154, 223, 158, 0.15);
-  border-radius: 8px;
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -14,7 +13,6 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── meta row ── */
 .meta {
   display: flex;
   align-items: center;
@@ -127,7 +125,6 @@
   color: rgba(236, 249, 236, 0.35);
 }
 
-/* ── confidence ── */
 .confRow {
   display: flex;
   justify-content: space-between;

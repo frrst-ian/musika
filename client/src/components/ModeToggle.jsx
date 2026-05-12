@@ -1,8 +1,8 @@
-import { MessageSquare, Mic, Music } from "lucide-react"
+import { Search, Mic, Music } from "lucide-react"
 import styles from "./ModeToggle.module.css"
 
 const MODES = [
-  { id: "chat",     label: "chat",     Icon: MessageSquare },
+  { id: "search",     label: "search",     Icon: Search },
   { id: "stt",      label: "voice",    Icon: Mic },
   { id: "identify", label: "identify", Icon: Music },
 ]

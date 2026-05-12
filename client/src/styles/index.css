@@ -1,3 +1,30 @@
+@font-face {
+    font-family: "Hack Regular";
+    src:
+        url("/fonts/hack-regular-webfont.woff2") format("woff2"),
+        url("/fonts/hack-regular-webfont.woff") format("woff");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Fira Sans";
+    src:
+        url("/fonts/firasans-regular-webfont.woff2") format("woff2"),
+        url("/fonts/firasans-regular-webfont.woff") format("woff");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "Fira Mono";
+    src:
+        url("/fonts/firamono-regular-webfont.woff2") format("woff2"),
+        url("/fonts/firamono-regular-webfont.woff") format("woff");
+    font-weight: normal;
+    font-style: normal;
+}
+
 *,
 *::before,
 *::after {
@@ -64,8 +91,13 @@ h6 {
 
 :root {
   --text: #ecf9ec;
-  --background: #040b05;
-  --primary: #9adf9e;
+  --background: #000000;
+  --primary: #2cad76;
   --secondary: #3c82ec;
   --accent: #9264ce;
+
+  --bg-active: rgb(20 80 170 / 78%);
+  --bg-2: rgb(36 143 227 / 13%);
+  --text-2: #7d7c7c;
 }
+
