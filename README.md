@@ -33,11 +33,13 @@ A music genre classifier with sentiment analysis, voice input, and text-to-speec
 
 Create `server/.env`:
 
+```bash
 GENIUS_TOKEN=
 GROQ_TOKEN=
 ACR_HOST=
 ACR_ACCESS_KEY=
 ACR_ACCESS_SECRET=
+```
 
 **Backend**
 ```bash
