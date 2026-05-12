@@ -1,4 +1,3 @@
-import asyncio
 from fastapi import FastAPI, HTTPException, UploadFile, File, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -10,6 +9,9 @@ from app.acr import identify as acr_identify
 from app.tts import speak, build_result_speech
 from app.commands import listen_for_command
 import app.playlist as playlist
+from ytmusicapi import YTMusic
+
+_ytm = YTMusic()
 
 app = FastAPI()
 
@@ -43,7 +45,6 @@ class TTSRequest(BaseModel):
 
 # Classify
 
-
 @app.post("/classify")
 async def classify(req: SearchRequest):
     global _last_result
@@ -55,12 +56,18 @@ async def classify(req: SearchRequest):
     genre_result = classify_genre(song["lyrics"])
     sentiment_result = analyze_sentiment(song["lyrics"])
 
+    try:
+        yt_results = _ytm.search(f"{song['title']} {song['artist']}", filter="songs", limit=1)
+        youtube_url = f"https://music.youtube.com/watch?v={yt_results[0]['videoId']}" if yt_results else ""
+    except Exception:
+        youtube_url = ""
+
     result = {
         "title": song["title"],
         "artist": song["artist"],
         "url": song["url"],
         "thumbnail": song["thumbnail"],
-        "youtube_url": f"https://www.youtube.com/results?search_query={song['title'].replace(' ', '+')}+{song['artist'].replace(' ', '+')}",
+        "youtube_url": youtube_url,
         **genre_result,
         **sentiment_result,
     }
@@ -90,28 +97,18 @@ async def acr_identify_route(file: UploadFile = File(...)):
     return result
 
 # TTS
-
-
 @app.post("/tts/speak")
 async def tts_speak(req: TTSRequest, background_tasks: BackgroundTasks):
-    """Fire and forget TTS — returns immediately, audio plays in background."""
-    background_tasks.add_task(asyncio.create_task, _speak_bg(req.text))
+    background_tasks.add_task(_speak_bg, req.text)
     return {"status": "speaking"}
-
 
 async def _speak_bg(text: str):
     from app.tts import _speak_async
     await _speak_async(text)
 
 #  Command mode
-
-
 @app.post("/command/listen")
 def command_listen(req: CommandRequest):
-    """
-    Blocking call — opens mic, waits for wake word + command.
-    Frontend should call this in response to a button press.
-    """
     context = req.last_result or _last_result
     return listen_for_command(context)
 

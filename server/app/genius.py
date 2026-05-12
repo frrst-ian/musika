@@ -7,7 +7,10 @@ load_dotenv()
 genius = lyricsgenius.Genius(os.environ["GENIUS_TOKEN"], skip_non_songs=True)
 
 def search_song(title: str, artist: str) -> dict | None:
-    song = genius.search_song(title, artist)
+    try:
+        song = genius.search_song(title, artist)
+    except Exception:
+        return None
     if not song:
         return None
     return {

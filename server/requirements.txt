@@ -12,3 +12,6 @@ spacy
 vaderSentiment
 edge-tts
 SpeechRecognition
+python-multipart
+PyAudio
+ytmusicapi

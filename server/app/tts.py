@@ -1,40 +1,42 @@
-import asyncio
-import tempfile
 import os
+import tempfile
 import edge_tts
+import asyncio
 
-# Jenny Neural — natural, non-robotic, neutral accent
 _VOICE = "en-US-JennyNeural"
 _TMP = tempfile.gettempdir()
+
 
 def build_result_speech(result: dict) -> str:
     title = result.get("title", "Unknown")
     artist = result.get("artist", "Unknown")
-    genre = result.get("genre", "unknown")
-    confidence = result.get("confidence", 0)
-    sentiment = result.get("sentiment", "")
-    emotion = result.get("emotion", "")
+    return f"{title} by {artist}"
 
-    lines = [
-        f"{title} by {artist}.",
-        f"Genre: {genre}, with {confidence:.0f} percent confidence.",
-    ]
-    if sentiment and emotion:
-        lines.append(f"The song has a {sentiment} sentiment and feels {emotion}.")
 
-    return " ".join(lines)
+def speak_sync(text: str):
+    path = os.path.join(_TMP, "musika_cmd.mp3")
+
+    os.system(
+        f'edge-tts --text "{text}" --voice {_VOICE} --write-media "{path}"'
+    )
+
+    os.system(
+        f'PULSE_SERVER=unix:/run/user/1000/pulse/native '
+        f'/usr/bin/mpg123 "{path}"'
+    )
+
 
 async def _speak_async(text: str):
     path = os.path.join(_TMP, "musika_tts.mp3")
+
     tts = edge_tts.Communicate(text, _VOICE)
     await tts.save(path)
-    # Non-blocking shell call — UI stays responsive
-    os.system(f"mpg123 -q {path} &")
+
+    os.system(
+        f'PULSE_SERVER=unix:/run/user/1000/pulse/native '
+        f'/usr/bin/mpg123 "{path}"'
+    )
+
 
 def speak(text: str):
-    """Fire and forget, returns immediately, audio plays in background."""
     asyncio.create_task(_speak_async(text))
-
-def speak_sync(text: str):
-    """For use outside async context"""
-    asyncio.run(_speak_async(text))

@@ -50,7 +50,13 @@ async def identify(audio_bytes: bytes) -> dict | None:
     if body.get("status", {}).get("code") != 0:
         return None
 
-    music = body["metadata"]["music"][0]
+    metadata = body.get("metadata", {})
+    music_list = metadata.get("music", [])
+    if not music_list:
+        return None
+
+    music = music_list[0]
+
     return {
         "title": music["title"],
         "artist": music["artists"][0]["name"],
