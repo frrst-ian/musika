@@ -46,7 +46,6 @@
   color: #f87171;
   border: 1px solid #f8717140;
   padding: 0.75rem 1rem;
-  border-radius: 6px;
   background: #f8717110;
 }
 
@@ -71,7 +70,6 @@
   width: 100%;
   padding: 1.25rem;
   border: 1px dashed rgba(154, 223, 158, 0.25);
-  border-radius: 8px;
   background: transparent;
   color: rgba(236, 249, 236, 0.45);
   font-family: inherit;
@@ -109,5 +107,4 @@
   border: 1px solid rgba(146, 100, 206, 0.2);
   background: rgba(146, 100, 206, 0.05);
   padding: 0.625rem 1rem;
-  border-radius: 6px;
 }
