@@ -1,0 +1,72 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.label {
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(236, 249, 236, 0.35);
+}
+.badges {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid;
+  border-radius: 4px;
+}
+.sub {
+  font-size: 0.7rem;
+  color: rgba(236, 249, 236, 0.4);
+}
+.compound {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: rgba(236, 249, 236, 0.5);
+}
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.barRow {
+  display: grid;
+  grid-template-columns: 28px 1fr 28px;
+  align-items: center;
+  gap: 0.5rem;
+}
+.barLabel {
+  font-size: 0.65rem;
+  color: rgba(236, 249, 236, 0.35);
+  letter-spacing: 0.05em;
+}
+.barTrack {
+  height: 3px;
+  background: rgba(154, 223, 158, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.barFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+.barNum {
+  font-size: 0.65rem;
+  color: rgba(236, 249, 236, 0.3);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

@@ -1,0 +1,35 @@
+.btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    border: 1px solid rgba(146, 100, 206, 0.25);
+    border-radius: 8px;
+    background: rgba(146, 100, 206, 0.06);
+    color: rgba(146, 100, 206, 0.7);
+    font-family: inherit;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition:
+        color 0.15s,
+        border-color 0.15s,
+        background 0.15s;
+}
+.btn:hover:not(:disabled) {
+    color: var(--accent);
+    border-color: rgba(146, 100, 206, 0.4);
+}
+.active {
+    color: var(--accent);
+    border-color: rgba(146, 100, 206, 0.5);
+    background: rgba(146, 100, 206, 0.1);
+}
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+.spin {
+    animation: spin 0.8s linear infinite;
+}

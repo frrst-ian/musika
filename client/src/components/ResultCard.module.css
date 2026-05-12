@@ -61,6 +61,12 @@
   margin-top: 0.1rem;
 }
 
+.links {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
 .link {
   display: inline-flex;
   align-items: center;
@@ -69,7 +75,6 @@
   color: var(--secondary);
   text-decoration: none;
   letter-spacing: 0.05em;
-  margin-top: 0.25rem;
   opacity: 0.8;
 }
 
