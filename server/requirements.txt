@@ -15,3 +15,5 @@ SpeechRecognition
 python-multipart
 PyAudio
 ytmusicapi
+firebase-admin
+psycopg2-binary

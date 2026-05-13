@@ -1,51 +1,82 @@
 import json
-import os
-from datetime import datetime
+from app.db import get_conn
 
-_PATH = os.path.join(os.path.dirname(__file__), "..", "playlist.json")
 
-def _load() -> dict:
-    if not os.path.exists(_PATH):
-        return {"songs": []}
-    with open(_PATH, "r") as f:
-        return json.load(f)
+def upsert(uid: str, song: dict):
+    conn = get_conn()
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            INSERT INTO playlist (
+                uid, title, artist, genre, confidence, all_scores,
+                sentiment, emotion, compound, scores,
+                url, thumbnail, youtube_url, search_count, last_searched
+            ) VALUES (
+                %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s,
+                %s, %s, %s, 1, NOW()
+            )
+            ON CONFLICT (uid, title, artist) DO UPDATE SET
+                search_count  = playlist.search_count + 1,
+                last_searched = NOW()
+            """,
+            (
+                uid,
+                song["title"],
+                song["artist"],
+                song.get("genre"),
+                song.get("confidence"),
+                json.dumps(song.get("all_scores")),
+                song.get("sentiment"),
+                song.get("emotion"),
+                song.get("compound"),
+                json.dumps(song.get("scores")),
+                song.get("url"),
+                song.get("thumbnail"),
+                song.get("youtube_url"),
+            ),
+        )
+    conn.commit()
 
-def _save(data: dict):
-    with open(_PATH, "w") as f:
-        json.dump(data, f, indent=2)
 
-def _key(title: str, artist: str) -> str:
-    return f"{title.lower().strip()}::{artist.lower().strip()}"
+def get_all(uid: str) -> list:
+    conn = get_conn()
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT * FROM playlist WHERE uid = %s ORDER BY last_searched DESC",
+            (uid,),
+        )
+        return _serialize(cur.fetchall())
 
-def upsert(song: dict):
-    """Add song or increment search_count if it already exists."""
-    data = _load()
-    k = _key(song["title"], song["artist"])
 
-    for existing in data["songs"]:
-        if _key(existing["title"], existing["artist"]) == k:
-            existing["search_count"] += 1
-            existing["last_searched"] = datetime.now().isoformat()
-            _save(data)
-            return
+def get_top(uid: str, limit: int = 10) -> list:
+    conn = get_conn()
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT * FROM playlist WHERE uid = %s ORDER BY search_count DESC LIMIT %s",
+            (uid, limit),
+        )
+        return _serialize(cur.fetchall())
 
-    data["songs"].append({
-        **song,
-        "search_count": 1,
-        "last_searched": datetime.now().isoformat(),
-    })
-    _save(data)
 
-def get_all() -> list:
-    return _load()["songs"]
+def remove(uid: str, title: str, artist: str):
+    conn = get_conn()
+    with conn.cursor() as cur:
+        cur.execute(
+            "DELETE FROM playlist WHERE uid = %s AND title = %s AND artist = %s",
+            (uid, title, artist),
+        )
+    conn.commit()
 
-def get_top(limit: int = 10) -> list:
-    songs = _load()["songs"]
-    return sorted(songs, key=lambda s: s["search_count"], reverse=True)[:limit]
 
-def remove(title: str, artist: str):
-    data = _load()
-    k = _key(title, artist)
-    data["songs"] = [s for s in data["songs"]
-                     if _key(s["title"], s["artist"]) != k]
-    _save(data)
+def _serialize(rows: list) -> list:
+    result = []
+    for row in rows:
+        r = dict(row)
+        # psycopg2 returns JSONB as dict already but guard anyway
+        if isinstance(r.get("all_scores"), str):
+            r["all_scores"] = json.loads(r["all_scores"])
+        if isinstance(r.get("scores"), str):
+            r["scores"] = json.loads(r["scores"])
+        result.append(r)
+    return result
