@@ -7,12 +7,13 @@ import ModeToggle from "./components/ModeToggle"
 import TTSToggle from "./components/TTSToggle"
 import CommandButton from "./components/CommandButton"
 import PlaylistPanel from "./components/PlaylistPanel"
+import AuthGate from "./components/AuthGate"
 import { useSpeech } from "./hooks/useSpeech"
 import styles from "./styles/app.module.css"
 
-const BASE = "http://localhost:8000"
+const BASE = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
-export default function App() {
+functionMusikApp({ token, user, logout }) {
   const [mode, setMode] = useState("search")
   const [ttsEnabled, setTtsEnabled] = useState(false)
   const [result, setResult] = useState(null)
@@ -22,6 +23,10 @@ export default function App() {
 
   const { listening, identifying, listenForSearch, stopListening, identifySong, stopIdentifying } = useSpeech()
 
+  function authHeaders() {
+    return { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+  }
+
   async function classify(title, artist) {
     setLoading(true)
     setError(null)
@@ -30,15 +35,12 @@ export default function App() {
     try {
       const res = await fetch(`${BASE}/classify`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: authHeaders(),
         body: JSON.stringify({ title, artist }),
       })
 
-      if (res.status === 404) {
-        setError("Song not found. Try a different title or artist.")
-        return
-      }
-      if (!res.ok) throw new Error("Server error")
+      if (res.status === 404) { setError("Song not found. Try a different title or artist."); return }
+      if (!res.ok) throw new Error()
 
       const data = await res.json()
       setResult(data)
@@ -46,7 +48,7 @@ export default function App() {
       if (ttsEnabled) {
         await fetch(`${BASE}/tts/speak`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: authHeaders(),
           body: JSON.stringify({
             text: `${data.title} by ${data.artist}. Genre: ${data.genre}, ${data.confidence.toFixed(0)} percent confidence. The song feels ${data.emotion} with a ${data.sentiment} sentiment.`,
           }),
@@ -59,46 +61,35 @@ export default function App() {
     }
   }
 
-  function handleSearch({ title, artist }) {
-    classify(title, artist)
-  }
+  function handleSearch({ title, artist }) { classify(title, artist) }
 
   function handleVoiceSearch() {
     if (listening) { stopListening(); return }
-    listenForSearch(
-      ({ title, artist }) => classify(title, artist),
-      (msg) => setError(msg),
-    )
+    listenForSearch(({ title, artist }) => classify(title, artist), (msg) => setError(msg))
   }
 
   function handleIdentify() {
     if (identifying) { stopIdentifying(); return }
     setError(null)
-    identifySong(
-      ({ title, artist }) => classify(title, artist),
-      (msg) => setError(msg),
-    )
+    identifySong(({ title, artist }) => classify(title, artist), (msg) => setError(msg))
   }
 
-function handleCommandAction(action) {
-  if (action.action === "open_youtube" && action.url) {
-    const a = document.createElement("a")
-    a.href = action.url
-    a.target = "_blank"
-    a.rel = "noreferrer"
-    a.click()
-    setCommandFeedback(`Opening: ${action.url}`)
-  } else if (action.action === "read_sentiment") {
-    setCommandFeedback(action.text)
-  } else if (action.action === "read_genre") {
-    setCommandFeedback(action.text)
-  } else if (action.action === "stop") {
-    setCommandFeedback("Musika session ended.")
-  } else if (action.action === "error") {
-    setCommandFeedback(`Error: ${action.reason}`)
+  function handleCommandAction(action) {
+    if (action.action === "open_youtube" && action.url) {
+      const a = document.createElement("a")
+      a.href = action.url; a.target = "_blank"; a.rel = "noreferrer"; a.click()
+      setCommandFeedback(`Opening: ${action.url}`)
+    } else if (action.action === "read_sentiment") {
+      setCommandFeedback(action.text)
+    } else if (action.action === "read_genre") {
+      setCommandFeedback(action.text)
+    } else if (action.action === "stop") {
+      setCommandFeedback("Musika session ended.")
+    } else if (action.action === "error") {
+      setCommandFeedback(`Error: ${action.reason}`)
+    }
+    setTimeout(() => setCommandFeedback(null), 4000)
   }
-  setTimeout(() => setCommandFeedback(null), 4000)
-}
 
   return (
     <div className={styles.page}>
@@ -112,40 +103,28 @@ function handleCommandAction(action) {
           <ModeToggle mode={mode} onChange={setMode} />
           <div className={styles.controlsRight}>
             <TTSToggle enabled={ttsEnabled} onChange={setTtsEnabled} />
-            <CommandButton lastResult={result} onAction={handleCommandAction} />
+            <CommandButton lastResult={result} token={token} onAction={handleCommandAction} />
+            <button className={styles.logoutBtn} onClick={logout}>logout</button>
           </div>
         </div>
 
-        {mode === "search" && (
-          <SearchBar onSearch={handleSearch} loading={loading} />
-        )}
+        {mode === "search" && <SearchBar onSearch={handleSearch} loading={loading} />}
 
         {mode === "stt" && (
-          <button
-            className={`${styles.bigMicBtn} ${listening ? styles.micActive : ""}`}
-            onClick={handleVoiceSearch}
-            disabled={loading}
-          >
+          <button className={`${styles.bigMicBtn} ${listening ? styles.micActive : ""}`} onClick={handleVoiceSearch} disabled={loading}>
             {listening ? <MicOff size={22} /> : <Mic size={22} />}
             <span>{listening ? "tap to stop" : "tap and speak the song name"}</span>
           </button>
         )}
 
         {mode === "identify" && (
-          <button
-            className={`${styles.bigMicBtn} ${identifying ? styles.micActive : ""}`}
-            onClick={handleIdentify}
-            disabled={loading}
-          >
+          <button className={`${styles.bigMicBtn} ${identifying ? styles.micActive : ""}`} onClick={handleIdentify} disabled={loading}>
             {identifying ? <MicOff size={22} /> : <Radio size={22} />}
             <span>{identifying ? "listening 10s... tap to stop" : "tap to identify song from mic"}</span>
           </button>
         )}
 
-        {commandFeedback && (
-          <p className={styles.feedback}>{commandFeedback}</p>
-        )}
-
+        {commandFeedback && <p className={styles.feedback}>{commandFeedback}</p>}
         {error && <p className={styles.error}>{error}</p>}
 
         {result && (
@@ -154,8 +133,16 @@ function handleCommandAction(action) {
           </ErrorBoundary>
         )}
 
-        <PlaylistPanel />
+        <PlaylistPanel token={token} />
       </main>
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthGate>
+      {({ token, user, logout }) => <MusikApp token={token} user={user} logout={logout} />}
+    </AuthGate>
   )
 }

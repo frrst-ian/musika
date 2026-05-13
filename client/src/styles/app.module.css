@@ -108,3 +108,19 @@
   background: rgba(146, 100, 206, 0.05);
   padding: 0.625rem 1rem;
 }
+
+.logoutBtn {
+  background: none;
+  border: none;
+  color: rgba(236, 249, 236, 0.25);
+  font-family: inherit;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: color 0.15s;
+  padding: 0.45rem 0.5rem;
+}
+
+.logoutBtn:hover {
+  color: #f87171;
+}

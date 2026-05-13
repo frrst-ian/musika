@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: musika-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt && python -m spacy download en_core_web_sm && python -m nltk.downloader punkt punkt_tab stopwords wordnet omw-1.4
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GENIUS_TOKEN
+        sync: false
+      - key: GROQ_TOKEN
+        sync: false
+      - key: ACR_HOST
+        sync: false
+      - key: ACR_ACCESS_KEY
+        sync: false
+      - key: ACR_ACCESS_SECRET
+        sync: false
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: DATABASE_URL
+        fromDatabase:
+          name: musika-db
+          property: connectionString
+
+databases:
+  - name: musika-db
+    databaseName: musika
+    user: musika
+    plan: free

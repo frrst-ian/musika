@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { ListMusic, TrendingUp, Trash2, ExternalLink } from "lucide-react"
 import styles from "./PlaylistPanel.module.css"
 
-const BASE = "http://localhost:8000"
+const BASE = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
 function SongRow({ song, onRemove }) {
   return (
@@ -27,16 +27,18 @@ function SongRow({ song, onRemove }) {
   )
 }
 
-export default function PlaylistPanel() {
-  const [tab, setTab] = useState("top")
+export default function PlaylistPanel({ token }) {
+  const [tab, setTab]     = useState("top")
   const [songs, setSongs] = useState([])
   const [loading, setLoading] = useState(false)
+
+  const headers = { Authorization: `Bearer ${token}` }
 
   async function fetchSongs() {
     setLoading(true)
     try {
       const endpoint = tab === "top" ? "/playlist/top" : "/playlist"
-      const res = await fetch(`${BASE}${endpoint}`)
+      const res = await fetch(`${BASE}${endpoint}`, { headers })
       const data = await res.json()
       setSongs(data.songs)
     } catch {
@@ -51,6 +53,7 @@ export default function PlaylistPanel() {
   async function handleRemove(song) {
     await fetch(`${BASE}/playlist?title=${encodeURIComponent(song.title)}&artist=${encodeURIComponent(song.artist)}`, {
       method: "DELETE",
+      headers,
     })
     fetchSongs()
   }
@@ -59,16 +62,10 @@ export default function PlaylistPanel() {
     <div className={styles.panel}>
       <div className={styles.header}>
         <div className={styles.tabs}>
-          <button
-            className={`${styles.tab} ${tab === "top" ? styles.activeTab : ""}`}
-            onClick={() => setTab("top")}
-          >
+          <button className={`${styles.tab} ${tab === "top" ? styles.activeTab : ""}`} onClick={() => setTab("top")}>
             <TrendingUp size={12} /> top
           </button>
-          <button
-            className={`${styles.tab} ${tab === "all" ? styles.activeTab : ""}`}
-            onClick={() => setTab("all")}
-          >
+          <button className={`${styles.tab} ${tab === "all" ? styles.activeTab : ""}`} onClick={() => setTab("all")}>
             <ListMusic size={12} /> all
           </button>
         </div>
@@ -77,9 +74,7 @@ export default function PlaylistPanel() {
 
       <div className={styles.list}>
         {loading && <p className={styles.empty}>loading...</p>}
-        {!loading && songs.length === 0 && (
-          <p className={styles.empty}>no songs yet — classify something first.</p>
-        )}
+        {!loading && songs.length === 0 && <p className={styles.empty}>no songs yet — classify something first.</p>}
         {!loading && songs.map((s, i) => (
           <SongRow key={`${s.title}-${s.artist}-${i}`} song={s} onRemove={handleRemove} />
         ))}
