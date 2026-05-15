@@ -19,7 +19,7 @@ app = FastAPI()
 
 ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://your-app.netlify.app",  # replace with your Netlify domain
+    "https://my.netlify.app", 
 ]
 
 app.add_middleware(
@@ -29,7 +29,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# runs schema.sql on startup — safe, uses IF NOT EXISTS
 @app.on_event("startup")
 def startup():
     init_db()

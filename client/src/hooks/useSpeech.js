@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react"
 
-const BASE = "http://localhost:8000"
+const BASE = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
 export function useSpeech() {
   const [listening, setListening] = useState(false)
@@ -8,7 +8,7 @@ export function useSpeech() {
   const mediaRef = useRef(null)
   const recognitionRef = useRef(null)
 
-  const listenForSearch = useCallback((onResult, onError) => {
+  const listenForSearch = useCallback((token, onResult, onError) => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognition) { onError("Speech recognition not supported. Use Chrome."); return }
 
@@ -25,7 +25,7 @@ export function useSpeech() {
       try {
         const res = await fetch(`${BASE}/stt/parse`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({ transcript }),
         })
         const parsed = await res.json()
@@ -38,7 +38,7 @@ export function useSpeech() {
 
   const stopListening = useCallback(() => { recognitionRef.current?.stop(); setListening(false) }, [])
 
-  const identifySong = useCallback(async (onResult, onError) => {
+  const identifySong = useCallback(async (token, onResult, onError) => {
     try {
       setIdentifying(true)
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
@@ -52,7 +52,11 @@ export function useSpeech() {
         const form = new FormData()
         form.append("file", blob, "sample.wav")
         try {
-          const res = await fetch(`${BASE}/acr/identify`, { method: "POST", body: form })
+          const res = await fetch(`${BASE}/acr/identify`, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+            body: form,
+          })
           if (res.status === 404) { onError("Song not recognized."); return }
           const data = await res.json()
           onResult(data)
