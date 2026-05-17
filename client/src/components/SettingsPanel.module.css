@@ -1,0 +1,100 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  font-family: "Hack Regular", monospace;
+}
+
+.section {
+  border: 1px solid rgba(154, 223, 158, 0.1);
+  padding: 1rem;
+  background: rgba(154, 223, 158, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sectionLabel {
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(236, 249, 236, 0.35);
+}
+
+.infoList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.infoRow {
+  display: grid;
+  grid-template-columns: 16px 110px 1fr;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(154, 223, 158, 0.05);
+}
+
+.infoRow:last-child {
+  border-bottom: none;
+}
+
+.icon {
+  color: rgba(236, 249, 236, 0.2);
+  flex-shrink: 0;
+}
+
+.infoLabel {
+  font-size: 0.7rem;
+  color: rgba(236, 249, 236, 0.35);
+  letter-spacing: 0.06em;
+}
+
+.infoValue {
+  font-size: 0.8125rem;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+  color: var(--primary);
+}
+
+.empty {
+  font-size: 0.75rem;
+  color: rgba(236, 249, 236, 0.25);
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  color: rgba(248, 113, 113, 0.5);
+  font-family: inherit;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  padding: 0.5rem 0.875rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+  width: fit-content;
+}
+
+.logoutBtn:hover {
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.4);
+  background: rgba(248, 113, 113, 0.06);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
+}

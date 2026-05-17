@@ -12,14 +12,17 @@ from app.firebase import verify_token, create_user_doc
 from app.db import init_db
 import app.playlist as playlist
 from ytmusicapi import YTMusic
+from groq import Groq
+import os
 
 _ytm = YTMusic()
+_groq = Groq(api_key=os.environ["GROQ_TOKEN"])
 
 app = FastAPI()
 
 ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://my.netlify.app", 
+    "https://my.netlify.app",
 ]
 
 app.add_middleware(
@@ -58,6 +61,16 @@ class UserDocRequest(BaseModel):
     username: str
 
 
+class ChatMessage(BaseModel):
+    role: str
+    content: str
+
+
+class ChatRequest(BaseModel):
+    messages: list[ChatMessage]
+    song_context: dict | None = None
+
+
 @app.post("/user/init")
 def init_user(req: UserDocRequest, uid: str = Depends(verify_token)):
     create_user_doc(uid, req.email, req.username)
@@ -94,6 +107,30 @@ async def classify(req: SearchRequest, uid: str = Depends(verify_token)):
     _last_result = result
     playlist.upsert(uid, result)
     return result
+
+
+@app.post("/chat")
+def chat(req: ChatRequest, uid: str = Depends(verify_token)):
+    system = "You are Musika, a music assistant. Answer concisely and only about music."
+
+    if req.song_context:
+        ctx = req.song_context
+        system = (
+            f"You are Musika, a music assistant. The user just classified this song:\n"
+            f"Title: {ctx.get('title')}\n"
+            f"Artist: {ctx.get('artist')}\n"
+            f"Genre: {ctx.get('genre')} ({ctx.get('confidence', 0):.0f}% confidence)\n"
+            f"Sentiment: {ctx.get('sentiment')} / Emotion: {ctx.get('emotion')} / Compound: {ctx.get('compound')}\n"
+            f"Answer questions about this song, its genre, sentiment, or related music. Be concise."
+        )
+
+    response = _groq.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "system", "content": system}]
+        + [{"role": m.role, "content": m.content} for m in req.messages],
+        max_tokens=400,
+    )
+    return {"reply": response.choices[0].message.content.strip()}
 
 
 @app.post("/stt/parse")
@@ -140,3 +177,28 @@ def get_top(uid: str = Depends(verify_token)):
 def remove_from_playlist(title: str, artist: str, uid: str = Depends(verify_token)):
     playlist.remove(uid, title, artist)
     return {"status": "removed"}
+
+
+@app.get("/stats")
+def get_stats(uid: str = Depends(verify_token)):
+    return playlist.get_stats(uid)
+
+
+@app.get("/me")
+def get_me(uid: str = Depends(verify_token)):
+    from app.db import get_conn
+    conn = get_conn()
+    with conn.cursor() as cur:
+        cur.execute("SELECT username, email, created_at FROM users WHERE uid = %s", (uid,))
+        row = cur.fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="User not found")
+    with conn.cursor() as cur:
+        cur.execute("SELECT COUNT(*) as total FROM playlist WHERE uid = %s", (uid,))
+        count_row = cur.fetchone()
+    return {
+        "username": row["username"],
+        "email": row["email"],
+        "created_at": row["created_at"].isoformat() if row["created_at"] else None,
+        "total_classified": count_row["total"] if count_row else 0,
+    }

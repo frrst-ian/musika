@@ -1,0 +1,164 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-family: "Hack Regular", monospace;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  padding: 2rem;
+  color: var(--primary);
+}
+
+.empty {
+  font-size: 0.8rem;
+  color: rgba(236, 249, 236, 0.25);
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  border: 1px solid rgba(154, 223, 158, 0.1);
+  padding: 1rem;
+  background: rgba(154, 223, 158, 0.02);
+}
+
+.label {
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(236, 249, 236, 0.35);
+  margin-bottom: 0.25rem;
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.barRow {
+  display: grid;
+  grid-template-columns: 90px 1fr 28px;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.barLabel {
+  font-size: 0.7rem;
+  color: rgba(236, 249, 236, 0.5);
+  text-transform: capitalize;
+  letter-spacing: 0.04em;
+}
+
+.barTrack {
+  height: 3px;
+  background: rgba(154, 223, 158, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.5s ease;
+}
+
+.barNum {
+  font-size: 0.65rem;
+  color: rgba(236, 249, 236, 0.3);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.topList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.topRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(154, 223, 158, 0.05);
+}
+
+.topRow:last-child {
+  border-bottom: none;
+}
+
+.rank {
+  font-size: 0.65rem;
+  color: rgba(236, 249, 236, 0.2);
+  width: 14px;
+  text-align: right;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.topInfo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.topTitle {
+  font-size: 0.8rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topArtist {
+  font-size: 0.7rem;
+  color: rgba(236, 249, 236, 0.4);
+}
+
+.topMeta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.topGenre {
+  font-size: 0.65rem;
+  color: var(--primary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.topCount {
+  font-size: 0.65rem;
+  color: rgba(236, 249, 236, 0.3);
+  font-variant-numeric: tabular-nums;
+}
+
+.topLink {
+  color: rgba(60, 130, 236, 0.5);
+  display: flex;
+  align-items: center;
+  transition: color 0.15s;
+}
+
+.topLink:hover {
+  color: var(--secondary);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
+}

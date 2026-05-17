@@ -3,10 +3,13 @@ import { Mic, MicOff, Radio } from "lucide-react";
 import SearchBar from "./components/SearchBar";
 import ResultCard from "./components/ResultCard";
 import ErrorBoundary from "./components/ErrorBoundary";
-import ModeToggle from "./components/ModeToggle";
 import TTSToggle from "./components/TTSToggle";
 import CommandButton from "./components/CommandButton";
 import PlaylistPanel from "./components/PlaylistPanel";
+import ChatPanel from "./components/ChatPanel";
+import StatsPanel from "./components/StatsPanel";
+import SettingsPanel from "./components/SettingsPanel";
+import Nav from "./components/Nav";
 import AuthGate from "./components/AuthGate";
 import { useSpeech } from "./hooks/useSpeech";
 import styles from "./styles/app.module.css";
@@ -14,12 +17,13 @@ import styles from "./styles/app.module.css";
 const BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 function MusikApp({ token, user, logout }) {
-  const [mode, setMode] = useState("search");
+  const [tab, setTab] = useState("classify");
   const [ttsEnabled, setTtsEnabled] = useState(false);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [commandFeedback, setCommandFeedback] = useState(null);
+  const [mode, setMode] = useState("search");
 
   const {
     listening,
@@ -74,15 +78,8 @@ function MusikApp({ token, user, logout }) {
     }
   }
 
-  function handleSearch({ title, artist }) {
-    classify(title, artist);
-  }
-
   function handleVoiceSearch() {
-    if (listening) {
-      stopListening();
-      return;
-    }
+    if (listening) { stopListening(); return; }
     listenForSearch(
       token,
       ({ title, artist }) => classify(title, artist),
@@ -91,10 +88,7 @@ function MusikApp({ token, user, logout }) {
   }
 
   function handleIdentify() {
-    if (identifying) {
-      stopIdentifying();
-      return;
-    }
+    if (identifying) { stopIdentifying(); return; }
     setError(null);
     identifySong(
       token,
@@ -115,6 +109,14 @@ function MusikApp({ token, user, logout }) {
       setCommandFeedback(action.text);
     } else if (action.action === "read_genre") {
       setCommandFeedback(action.text);
+    } else if (action.action === "read_artist") {
+      setCommandFeedback(action.text);
+    } else if (action.action === "read_confidence") {
+      setCommandFeedback(action.text);
+    } else if (action.action === "read_title") {
+      setCommandFeedback(action.text);
+    } else if (action.action === "read_scores") {
+      setCommandFeedback(action.text);
     } else if (action.action === "stop") {
       setCommandFeedback("Musika session ended.");
     } else if (action.action === "error") {
@@ -131,65 +133,67 @@ function MusikApp({ token, user, logout }) {
       </header>
 
       <main className={styles.main}>
-        <div className={styles.controls}>
-          <ModeToggle mode={mode} onChange={setMode} />
-          <div className={styles.controlsRight}>
-            <TTSToggle enabled={ttsEnabled} onChange={setTtsEnabled} />
-            <CommandButton
-              lastResult={result}
-              token={token}
-              onAction={handleCommandAction}
-            />
-            <button className={styles.logoutBtn} onClick={logout}>
-              logout
-            </button>
-          </div>
-        </div>
+        <Nav active={tab} onChange={setTab} />
 
-        {mode === "search" && (
-          <SearchBar onSearch={handleSearch} loading={loading} />
+        {tab === "classify" && (
+          <>
+            <div className={styles.controls}>
+              <div className={styles.modeBtns}>
+                {["search", "stt", "identify"].map((m) => (
+                  <button
+                    key={m}
+                    className={`${styles.modeBtn} ${mode === m ? styles.modeBtnActive : ""}`}
+                    onClick={() => setMode(m)}
+                  >
+                    {m === "search" ? "search" : m === "stt" ? "voice" : "identify"}
+                  </button>
+                ))}
+              </div>
+              <div className={styles.controlsRight}>
+                <TTSToggle enabled={ttsEnabled} onChange={setTtsEnabled} />
+                <CommandButton lastResult={result} token={token} onAction={handleCommandAction} />
+              </div>
+            </div>
+
+            {mode === "search" && <SearchBar onSearch={({ title, artist }) => classify(title, artist)} loading={loading} />}
+
+            {mode === "stt" && (
+              <button
+                className={`${styles.bigMicBtn} ${listening ? styles.micActive : ""}`}
+                onClick={handleVoiceSearch}
+                disabled={loading}
+              >
+                {listening ? <MicOff size={22} /> : <Mic size={22} />}
+                <span>{listening ? "tap to stop" : "tap and speak the song name"}</span>
+              </button>
+            )}
+
+            {mode === "identify" && (
+              <button
+                className={`${styles.bigMicBtn} ${identifying ? styles.micActive : ""}`}
+                onClick={handleIdentify}
+                disabled={loading}
+              >
+                {identifying ? <MicOff size={22} /> : <Radio size={22} />}
+                <span>{identifying ? "listening 10s... tap to stop" : "tap to identify song from mic"}</span>
+              </button>
+            )}
+
+            {commandFeedback && <p className={styles.feedback}>{commandFeedback}</p>}
+            {error && <p className={styles.error}>{error}</p>}
+
+            {result && (
+              <ErrorBoundary key={result.title + result.artist}>
+                <ResultCard result={result} />
+              </ErrorBoundary>
+            )}
+          </>
         )}
 
-        {mode === "stt" && (
-          <button
-            className={`${styles.bigMicBtn} ${listening ? styles.micActive : ""}`}
-            onClick={handleVoiceSearch}
-            disabled={loading}
-          >
-            {listening ? <MicOff size={22} /> : <Mic size={22} />}
-            <span>
-              {listening ? "tap to stop" : "tap and speak the song name"}
-            </span>
-          </button>
-        )}
-
-        {mode === "identify" && (
-          <button
-            className={`${styles.bigMicBtn} ${identifying ? styles.micActive : ""}`}
-            onClick={handleIdentify}
-            disabled={loading}
-          >
-            {identifying ? <MicOff size={22} /> : <Radio size={22} />}
-            <span>
-              {identifying
-                ? "listening 10s... tap to stop"
-                : "tap to identify song from mic"}
-            </span>
-          </button>
-        )}
-
-        {commandFeedback && (
-          <p className={styles.feedback}>{commandFeedback}</p>
-        )}
-        {error && <p className={styles.error}>{error}</p>}
-
-        {result && (
-          <ErrorBoundary key={result.title + result.artist}>
-            <ResultCard result={result} />
-          </ErrorBoundary>
-        )}
-
-        <PlaylistPanel token={token} />
+        {tab === "playlist" && <PlaylistPanel token={token} />}
+        {tab === "chat" && <ChatPanel token={token} songContext={result} />}
+        {tab === "stats" && <StatsPanel token={token} />}
+        {tab === "settings" && <SettingsPanel token={token} logout={logout} />}
       </main>
     </div>
   );

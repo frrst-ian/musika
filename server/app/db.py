@@ -7,19 +7,33 @@ load_dotenv()
 
 _conn = None
 
+def _new_conn():
+    c = psycopg2.connect(os.environ["DATABASE_URL"], cursor_factory=RealDictCursor)
+    c.autocommit = False
+    return c
+
 def get_conn():
     global _conn
-    # reconnect if connection dropped
     if _conn is None or _conn.closed:
-        _conn = psycopg2.connect(os.environ["DATABASE_URL"], cursor_factory=RealDictCursor)
+        _conn = _new_conn()
+    else:
+        try:
+            with _conn.cursor() as cur:
+                cur.execute("SELECT 1")
+        except Exception:
+            _conn = _new_conn()
     return _conn
 
-
 def init_db():
+    global _conn
+    _conn = _new_conn()
     schema = os.path.join(os.path.dirname(__file__), "..", "schema.sql")
-    with open(schema, "r") as f:
+    with open(schema) as f:
         sql = f.read()
-    conn = get_conn()
-    with conn.cursor() as cur:
-        cur.execute(sql)
-    conn.commit()
+    try:
+        with _conn.cursor() as cur:
+            cur.execute(sql)
+        _conn.commit()
+    except Exception:
+        _conn.rollback()
+        raise
