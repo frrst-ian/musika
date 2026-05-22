@@ -145,4 +145,3 @@ Toggle "tts on" in the UI to have results read aloud automatically after each cl
 Every classified song is saved automatically per user account. The playlist panel shows:
 - **Top** — songs sorted by how often they have been searched
 - **All** — full list with genre, search count, and a YouTube link
-```
