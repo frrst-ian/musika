@@ -9,7 +9,7 @@ genius = lyricsgenius.Genius(os.environ["GENIUS_TOKEN"], skip_non_songs=True)
 def search_song(title: str, artist: str) -> dict | None:
     try:
         song = genius.search_song(title, artist)
-    except Exception:
+    except Exception as e:
         print(f"[genius] search_song error: {e}", flush=True)
         return None
     if not song:
