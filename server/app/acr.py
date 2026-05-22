@@ -37,7 +37,7 @@ async def identify(audio_bytes: bytes) -> dict | None:
         "signature_version": "1",
     }
 
-    async with httpx.AsyncClient(timeout=10) as client:
+    async with httpx.AsyncClient(timeout=30) as client:
         response = await client.post(
             _ENDPOINT,
             data=data,
