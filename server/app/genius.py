@@ -1,38 +1,30 @@
-import os
-import lyricsgenius
+import os, requests
 from dotenv import load_dotenv
-
 load_dotenv()
 
-genius = lyricsgenius.Genius(os.environ["GENIUS_TOKEN"], skip_non_songs=True)
-
-genius.headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    'Accept': 'application/json, text/plain, */*',
-    'Accept-Language': 'en-US,en;q=0.9',
-    'Referer': 'https://genius.com/'
-}
+GENIUS_TOKEN = os.environ["GENIUS_TOKEN"]
+HEADERS = {"Authorization": f"Bearer {GENIUS_TOKEN}"}
 
 def search_song(title: str, artist: str) -> dict | None:
     try:
-        song = genius.search_song(title, artist)
+        r = requests.get(
+            "https://api.genius.com/search",
+            headers=HEADERS,
+            params={"q": f"{title} {artist}"},
+            timeout=10,
+        )
+        r.raise_for_status()
+        hits = r.json()["response"]["hits"]
+        if not hits:
+            return None
+        s = hits[0]["result"]
+        return {
+            "title": s["title"],
+            "artist": s["primary_artist"]["name"],
+            "url": s["url"],
+            "thumbnail": s["song_art_image_thumbnail_url"],
+            "lyrics": None,  
+        }
     except Exception as e:
         print(f"[genius] search_song error: {e}", flush=True)
         return None
-    
-    if not song:
-        return None
-        
-    return {
-        "title": song.title,
-        "artist": song.artist,
-        "url": song.url,
-        "thumbnail": song.song_art_image_thumbnail_url,
-        "lyrics": song.lyrics,
-    }
-
-def fetch_lyrics(title: str, artist: str) -> str | None:
-    song = search_song(title, artist)
-    if not song:
-        return None
-    return song["lyrics"]
