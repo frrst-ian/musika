@@ -22,7 +22,7 @@ app = FastAPI()
 
 ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://my.netlify.app",
+    "https://awesome-musika.netlify.app",
 ]
 
 app.add_middleware(
@@ -202,3 +202,7 @@ def get_me(uid: str = Depends(verify_token)):
         "created_at": row["created_at"].isoformat() if row["created_at"] else None,
         "total_classified": count_row["total"] if count_row else 0,
     }
+
+@app.get("/")
+def root():
+    return {"status": "ok"}
