@@ -10,6 +10,7 @@ def search_song(title: str, artist: str) -> dict | None:
     try:
         song = genius.search_song(title, artist)
     except Exception:
+        print(f"[genius] search_song error: {e}", flush=True)
         return None
     if not song:
         return None
